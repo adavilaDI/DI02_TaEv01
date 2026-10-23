@@ -1,15 +1,15 @@
 export const environment = {
   production: false,
   auth: {
-    email: 'mardanza@birt.eus',
+    email: 'adavila@ikasles.birt.eus',
     password: 'Test1234',
   },
   firebase : {
-    apiKey: "AIzaSyBGXAMJMVhgfAUorRqBZLg9DXTjXF_3R5k",
-    authDomain: "di-bbdd-472ce.firebaseapp.com",
-    projectId: "di-bbdd-472ce",
-    storageBucket: "di-bbdd-472ce.firebasestorage.app",
-    messagingSenderId: "1053575576004",
-    appId: "1:1053575576004:web:033199ff777d04aaf40c91"
+    apiKey: "AIzaSyA-toplUGym3pMss2rYMxiANBvMq2v4ltk",
+    authDomain: "di-adavila.firebaseapp.com",
+    projectId: "di-adavila",
+    storageBucket: "di-adavila.firebasestorage.app",
+    messagingSenderId: "850591117922",
+    appId: "1:850591117922:web:ce8ce1bbc42f044a5f573b"
   }
 }

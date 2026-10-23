@@ -4,6 +4,9 @@ import { IonicModule, ModalController, ToastController } from '@ionic/angular';
 import { Restaurante } from '../../interface/restaurante';
 import { RestauranteService } from '../../services/restaurante.service';
 
+import {closeCircleOutline} from 'ionicons/icons';
+import { addIcons } from 'ionicons';
+
 @Component({
   selector: 'app-add-restaurante-modal',
   standalone: true,
@@ -11,6 +14,10 @@ import { RestauranteService } from '../../services/restaurante.service';
   templateUrl: './add-restaurante-modal.component.html',
 })
 export class AddRestauranteModalComponent {
+
+    constructor() {
+      addIcons({ closeCircleOutline });
+    }
 
   private fb = inject(FormBuilder);
   private modalCtrl = inject(ModalController);
@@ -26,8 +33,8 @@ export class AddRestauranteModalComponent {
     address:      [''],
     phone:        [''],
     web:          [''],
-    michelinStar: ['0'],
-    repsolSun:    ['0'],
+    michelinStar: ['0', [Validators.minLength(0), Validators.maxLength(3)]],
+    repsolSun:    ['0', [Validators.minLength(0), Validators.maxLength(3)]],
   });
 
   cancelar() {

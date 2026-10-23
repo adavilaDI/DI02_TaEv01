@@ -5,14 +5,24 @@ import { RestauranteService } from '../services/restaurante.service';
 import { AddRestauranteModalComponent } from '../components/add-restaurante-modal/add-restaurante-modal.component';
 import restaurantesJSON from '../../assets/datos/restaurantes.json';
 
+import { addIcons } from 'ionicons';
+import { closeCircleOutline, addOutline, cloudUploadOutline, restaurant, trash, globeOutline,
+   sunny, star, caretUpOutline, caretDownOutline, lockClosed } from 'ionicons/icons';
+
 @Component({
   selector: 'app-home',
   standalone: true,
   imports: [IonicModule],
   templateUrl: 'home.page.html',
-  styleUrls: ['home.page.scss']
+  styleUrls: ['home.page.scss'],
 })
 export class HomePage {
+
+  constructor() {
+    // Registra los iconos que vas a utilizar
+    addIcons({ closeCircleOutline, addOutline, cloudUploadOutline, restaurant, trash, globeOutline,
+      sunny, star, caretUpOutline, caretDownOutline, lockClosed });
+  }
 
   // ############################### REGION DATOS ###############################
 
@@ -37,15 +47,29 @@ export class HomePage {
   // true cuando hay al menos un restaurante cargado
   hayDatos = computed(() => this.restaurantesCargados().length > 0);
 
+
   // Carga los restaurantes desde Firebase y muestra un toast de confirmación
   async cargarDatos() {
     this.cargando.set(true);
+
+    //Muestra un loading en pantalla
+    const loading = await this.loadingCtrl.create({
+      message: 'Cargando lista',
+      backdropDismiss: false
+    });
+    loading.present();
     try {
       const datos = await this.restauranteService.getAll();
       this.restaurantesCargados.set(datos);
+      await loading.dismiss();
       this.mostrarToast(`${datos.length} restaurantes cargados`, 'success');
-    } catch {
-      this.mostrarToast('Error al cargar los datos desde Firebase', 'danger');
+    } catch (error : any) {
+        await loading.dismiss();
+        console.error('Error al cargar datos: ', error);
+        const msg = error?.code === 'permission-denied'
+          ? 'Sin permisos en Firebase. Revisa las reglas de seguridad.'
+          : 'Error al cargar datos. Revisa tu conexión a internet.';
+        this.mostrarToast(msg, 'danger');
     } finally {
       this.cargando.set(false);
     }
@@ -93,6 +117,37 @@ export class HomePage {
 
   // Muestra confirmación y borra el restaurante indicado de Firebase y de la lista local
   async borrarRestaurante(r: Restaurante) {
+
+    //Creo un toast especifico con opción deshacer
+    const toastBorrar = await this.toastCtrl.create({
+      message: `Restaurante ${r.documentName} borrado`,
+      duration: 6000,
+      color: 'success',
+      position: 'bottom',
+      buttons: [{ 
+        text: 'Deshacer', 
+        handler: async ()=>{
+          //Comprueba que no exista el objeto en la lista, porque si borras y luego deshaces la accion, firebase
+          //lo guarda con un nuevo id de documento y el anterior numero de documrnto lo guarda en el campo id del objeto
+          //Si lo repites con el mismo elemento, los guarada acumulandolos con diferente id de documento y mismo id de objeto
+          try{
+            if((await this.restauranteService.getAll()).some(restaurante => restaurante.id === r.id)){
+              console.log('hay coincidencia');
+              return;
+            }
+            await this.restauranteService.add(r);
+          } catch (error: any){
+            console.error('Error al deshacer borrar', error);
+            const msg = error?.code === 'permission-denied'
+              ? 'Sin permisos en Firebase. Revisa las reglas de seguridad.'
+              : 'Error al deshacer borrar. Revisa tu conexión a internet.';
+            this.mostrarToast(msg, 'danger');
+          } finally{
+            await this.cargarDatos()
+          }
+          } 
+      }]
+    });
     const alert = await this.alertCtrl.create({
       header: 'Confirmar borrado',
       subHeader: `¿Deseas borrar el restaurante ${r.documentName}?`,
@@ -106,12 +161,23 @@ export class HomePage {
               this.mostrarToast('No se puede borrar: el restaurante no tiene ID.', 'danger');
               return;
             }
+            const loading = await this.loadingCtrl.create({
+              message: `Borrando ${r.documentName}`,
+              backdropDismiss: false
+            })
+            await loading.present();
             try {
               await this.restauranteService.delete(r.id);
               this.restaurantesCargados.update(lista => lista.filter(x => x.id !== r.id));
-              this.mostrarToast(`${r.documentName} eliminado`, 'success');
-            } catch {
-              this.mostrarToast('Error al borrar el restaurante', 'danger');
+              loading.dismiss();
+              await toastBorrar.present();
+            } catch (error :any){
+              loading.dismiss();
+              console.error('Error al borrar restaurante:', error);
+              const msg = error?.code === 'permission-denied'
+              ? 'Sin permisos en Firebase. Revisa las reglas de seguridad.'
+              : 'Error al importar. Revisa tu conexión a internet.';
+              this.mostrarToast(msg, 'danger');
             }
           }
         }
@@ -134,9 +200,11 @@ export class HomePage {
 
   // Muestra un toast con el mensaje y color indicados
   private async mostrarToast(mensaje: string, color: 'success' | 'danger' | 'warning') {
+
     const toast = await this.toastCtrl.create({
       message: mensaje,
-      duration: 3000,
+      //Se establece la duracion segun el color, para danger hay que cerrarlo manual
+      duration: color === 'danger'? 0: 4000,
       color,
       position: 'bottom',
       buttons: [{ text: 'X', role: 'cancel' }]
@@ -161,6 +229,21 @@ export class HomePage {
     this.textoBusqueda.set('');
     this.territorioSeleccionado.set('');
     this.localidadesSeleccionadas.set([]);
+  }
+
+  //Se añaden metodos para limpiar los filtros independientemente y desde los chips
+  borrarTerritorio(){
+    this.territorioSeleccionado.set('');
+  }
+  borrarLocalidades(){
+    this.localidadesSeleccionadas.set([]);
+  }
+  borrarUnaLocalidad(l: string){
+    console.log('borrada localidad: ' + l);
+    this.localidadesSeleccionadas.update(localidades => localidades.filter( loc => loc !== l));
+  }
+  borrarTextoBusqueda(){
+    this.textoBusqueda.set('');
   }
 
   // ############################### REGION TERRITORIOS ###############################
@@ -236,5 +319,40 @@ export class HomePage {
   // Devuelve el número de soles Repsol (0 si no tiene o el valor no es numérico)
   repsolSoles(r: Restaurante): number {
     return Number(r.repsolSun) || 0;
+  }
+
+  //Devuelve un array numerico, se usa para mostrar soles y estrellas en la plantilla
+  crearArray(numero: number){
+    return new Array(numero);
+  }
+
+  //Signals para ordenar las columnas
+  sortColumna = signal('');
+  sortDireccion = signal(false);
+
+  //Metodo que ordena la columna activa que se le pasa como parametro
+  ordenar(columna: string){
+    console.log('pulsado');
+    if(this.sortColumna() === columna){
+      this.sortDireccion.set(!this.sortDireccion());
+    } else{
+      this.sortColumna.set(columna);
+      this.sortDireccion.set(true);
+    }
+    this.restaurantesFiltrados().sort((a: any, b: any) => {
+      let valorA = a[columna];
+      let valorB = b[columna];
+
+      if (typeof valorA === 'string') valorA = valorA.toLowerCase();
+      if (typeof valorB === 'string') valorB = valorB.toLowerCase();
+
+      if (valorA < valorB) {
+        return this.sortDireccion() ? -1 : 1;
+      }
+      if (valorA > valorB) {
+        return this.sortDireccion() ? 1 : -1;
+      }
+      return 0;
+    })
   }
 }

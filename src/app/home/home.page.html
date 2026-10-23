@@ -1,31 +1,39 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>Guía de Restaurantes Euskadi</ion-title>
+    <ion-title>
+      <img src="../assets/icon/restaurante.png" style="height: 30px; width: auto;"/>
+      <span> Guía de Restaurantes Euskadi</span>
+    </ion-title>
     <ion-buttons slot="end">
       <ion-button
         (click)="abrirModalAnadir()"
         [disabled]="cargando() || importando()"
-        title="Añadir un restaurante nuevo">
+        title="Añadir un restaurante nuevo"
+        slot= "start">
         <ion-icon slot="start" name="add-outline"></ion-icon>
         Añadir
       </ion-button>
       <ion-button
         (click)="confirmarImportacion()"
         [disabled]="cargando() || importando()"
-        title="Importar restaurantes del JSON local a Firebase">
+        title="Importar restaurantes del JSON local a Servidor"
+        slot= "start">
         @if (importando()) {
           <ion-spinner name="crescent" style="width:18px;height:18px;margin-right:6px;"></ion-spinner>
         }
-        Importar JSON
+        <ion-icon slot="start" name="cloud-upload-outline"></ion-icon>
+        Importar
       </ion-button>
       <ion-button
         (click)="cargarDatos()"
         [disabled]="cargando() || importando()"
-        title="Cargar restaurantes desde Firebase">
+        title="Cargar restaurantes desde Servidor"
+        slot= "start">
         @if (cargando()) {
-          <ion-spinner name="crescent" style="width:18px;height:18px;margin-right:6px;"></ion-spinner>
+          <ion-spinner name="crescent" style="width:18px;height:18px;margin-right:6px;">Cargando</ion-spinner>
         }
-        Cargar datos
+        <ion-icon slot="start" name="restaurant"></ion-icon>
+        Cargar
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -42,6 +50,9 @@
       </ion-label>
     </ion-item>
   }
+  @if(hayFiltrosActivos()){
+    <ion-button fill="outline" (click)="limpiarTodosFiltros()" expand="block" color="warning" strong="true">Borrar todos los filtros</ion-button>
+  }
 
   <!-- Filtros -->
   <ion-grid>
@@ -56,6 +67,10 @@
             [disabled]="!hayDatos()"
             (ionInput)="textoBusqueda.set($event.detail.value ?? '')">
           </ion-input>
+          <ion-button size="medium" fill="clear" color="dark" (click)="borrarTextoBusqueda()"
+            [disabled]="!hayDatos() || textoBusqueda() === ''">
+            <ion-icon slot="end" name="close-circle-outline" aria-hidden="true"></ion-icon>
+          </ion-button>
         </ion-item>
       </ion-col>
 
@@ -78,6 +93,10 @@
               <ion-select-option [value]="t">{{ t }}</ion-select-option>
             }
           </ion-select>
+          <ion-button size="medium" fill="clear" color="dark" (click)="borrarTerritorio()"
+            [disabled]="!hayDatos() || !territorioSeleccionado()">
+            <ion-icon slot="end" name="close-circle-outline" aria-hidden="true"></ion-icon>
+          </ion-button>
         </ion-item>
       </ion-col>
 
@@ -89,7 +108,7 @@
           -->
         <!--Si tenemos muchas localidades seleccionadas, estas se recortan mediante..., por eso añadimos [title] para mostrar un tooltip cuando ponemos el ratón sobre ella -->
         <!--<ion-label>Localidad</ion-label>-->
-        <ion-item>          
+       <ion-item>          
           <ion-select
             label="Localidad"
             labelPlacement="start"
@@ -105,10 +124,37 @@
               <ion-select-option [value]="loc">{{ loc }}</ion-select-option>
             }
           </ion-select>
+          <ion-button size="medium" fill="clear" color="dark" (click)="borrarLocalidades()"
+            [disabled]="!hayDatos() || localidadesSeleccionadas().length == 0">
+            <ion-icon slot="end" name="close-circle-outline" aria-hidden="true"></ion-icon>
+          </ion-button>
         </ion-item>
       </ion-col>
     </ion-row>
   </ion-grid>
+
+  <!--Chips para reforzar los filtros-->
+  @if(hayFiltrosActivos()){
+    <div class="chips">
+      @if(textoBusqueda()){
+        <ion-chip color="primary"><ion-label>Texto: {{textoBusqueda()}}</ion-label><ion-icon name="close-circle-outline" (click)="borrarTextoBusqueda()" title="eliminaar filtro"></ion-icon></ion-chip>
+      }
+      @if(territorioSeleccionado()){
+        <ion-chip color="secondary"><ion-label>{{territorioSeleccionado()}}</ion-label>
+        @if(localidadesSeleccionadas().length > 0){
+          <ion-icon name="lock-closed" disable = 'true' title="No se puede eliminar habiendo localidades"></ion-icon>
+        } @else {
+          <ion-icon name="close-circle-outline" (click)="borrarTerritorio()" title="eliminaar filtro"></ion-icon>
+        }
+        </ion-chip>
+      }
+      @if(localidadesSeleccionadas()){
+        @for(l of localidadesSeleccionadas(); track l ){
+          <ion-chip color="tertiary"><ion-label>{{l}}</ion-label><ion-icon name="close-circle-outline" (click)="borrarUnaLocalidad(l)" title="eliminaar filtro"></ion-icon></ion-chip>
+        }
+      }
+    </div>
+  } 
 
   <!-- Contador de restaurantes filtrados -->
   @if (hayDatos()) {
@@ -129,14 +175,46 @@
       <table class="restaurantes-table">
         <thead>
           <tr>
-            <th>Nombre</th>
-            <th>Localidad</th>
+            <th class="ordenable" (click)= "ordenar('documentName')" title="Ordenar">
+              Nombre
+              @if(sortColumna() === 'documentName'){
+                @if(sortDireccion()){
+                  <ion-icon name="caret-up-outline" color="warning"></ion-icon>
+                }
+                @else{<ion-icon name="caret-down-outline" color="warning"></ion-icon>}
+              }
+            </th>
+            <th class="ordenable" (click)= "ordenar('locality')" title="Ordenar" >
+              Localidad
+              @if(sortColumna() === 'locality'){
+                @if(sortDireccion()){
+                  <ion-icon name="caret-up-outline" color="warning"></ion-icon>
+                }
+                @else{<ion-icon name="caret-down-outline" color="warning"></ion-icon>}
+              }
+            </th>
             <th>Dirección</th>
             <th>Teléfono</th>
             <th>Territorio</th>
             <th>Web</th>
-            <th>Estrellas Michelin</th>
-            <th>Soles Repsol</th>
+            <th class="ordenable" (click)= "ordenar('michelinStar')" title="Ordenar" >
+              <ion-icon name="star" color="warning"/> Michelin
+              @if(sortColumna() === 'michelinStar'){
+                @if(sortDireccion()){
+                  <ion-icon name="caret-up-outline" color="warning"></ion-icon>
+                }
+                @else{<ion-icon name="caret-down-outline" color="warning"></ion-icon>}
+              }
+            </th>
+            <th class="ordenable" (click)= "ordenar('repsolSun')" title="Ordenar" >
+              <ion-icon name="sunny" color="danger"/> Repsol
+              @if(sortColumna() === 'repsolSun'){
+                @if(sortDireccion()){
+                  <ion-icon name="caret-up-outline" color="warning"></ion-icon>
+                }
+                @else{<ion-icon name="caret-down-outline" color="warning"></ion-icon>}
+              }
+            </th>
             <th>Borrar</th>
           </tr>
         </thead>
@@ -151,21 +229,29 @@
               <td class="center">
                 @if (r.web) {
                   <a [href]="r.web" target="_blank" [title]="r.web" class="web-link">
-                    Enlace
+                    <ion-icon name="globe-outline"/>
                   </a>
                 }
               </td>
               <td class="center">
-                {{ estrellasMichelin(r) > 0 ? estrellasMichelin(r) : '-' }}
+                @if(estrellasMichelin(r) > 0){
+                  @for(e of crearArray(estrellasMichelin(r)); track e){
+                    <ion-icon name="star" color="warning"/>
+                  }
+                } @else{-}
               </td>
               <td class="center">
-                {{ repsolSoles(r) > 0 ? repsolSoles(r) : '-' }}
+                @if(repsolSoles(r) > 0){
+                  @for(e of crearArray(repsolSoles(r)); track e){
+                    <ion-icon name="sunny" color="danger"/>
+                  }
+                } @else{-}
               </td>
               <td class="center">
                 <ion-button fill="clear" color="danger" size="small"
                   title="Borrar restaurante"
                   (click)="borrarRestaurante(r)">
-                  Borrar
+                  <ion-icon name="trash"></ion-icon>
                 </ion-button>
               </td>
             </tr>

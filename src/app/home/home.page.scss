@@ -48,6 +48,11 @@
       background-color: #3880ff;
       color: #ffffff;
       border: 1px solid rgba(255, 255, 255, 0.4);
+      &.ordenable{
+        cursor: pointer;
+        &:hover{background-color: #3904fa;}
+      }
+      
     }
 
     tbody tr {
@@ -101,5 +106,16 @@
       color: #2d6fe0;
       transform: scale(1.2);
     }
+  }
+
+  .chips{
+    position: sticky;
+    top: 0; 
+    z-index: 100; 
+    background: #ffffff; 
+    display: flex; 
+    overflow-x: auto; 
+    padding: 8px; 
+    white-space: nowrap;
   }
 }

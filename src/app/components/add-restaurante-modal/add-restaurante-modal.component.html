@@ -2,7 +2,9 @@
   <ion-toolbar>
     <ion-title>Añadir Restaurante</ion-title>
     <ion-buttons slot="end">
-      <ion-button (click)="cancelar()" [disabled]="guardando()">Cancelar</ion-button>
+      <ion-button (click)="cancelar()" [disabled]="guardando()">
+        <ion-icon name = "close-circle-outline" slot = "end"></ion-icon>
+        Cancelar</ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -87,7 +89,7 @@
       <!-- Estrellas Michelin -->
       <ion-item>
         <ion-input
-          label="Estrellas Michelin"
+          label="Estrellas Michelin (0-3)"
           labelPlacement="stacked"
           type="number"
           min="0"
@@ -95,11 +97,16 @@
           formControlName="michelinStar">
         </ion-input>
       </ion-item>
+        @if (form.get('michelinStar')?.invalid || form.get('michelinStar')?.touched) {
+          <ion-text color="danger" class="ion-padding-start">
+            <small>Introduce un numero entre 0 y 3</small>
+          </ion-text>
+        }
 
       <!-- Soles Repsol -->
       <ion-item>
         <ion-input
-          label="Soles Repsol"
+          label="Soles Repsol (0-3)"
           labelPlacement="stacked"
           type="number"
           min="0"
@@ -107,6 +114,11 @@
           formControlName="repsolSun">
         </ion-input>
       </ion-item>
+        @if (form.get('repsolSun')?.invalid || form.get('RepsolSun')?.touched) {
+          <ion-text color="danger" class="ion-padding-start">
+            <small>Introduce un numero entre 0 y 3</small>
+          </ion-text>
+        }
 
     </ion-list>
 
