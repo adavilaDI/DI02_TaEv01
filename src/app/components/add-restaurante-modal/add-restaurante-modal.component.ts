@@ -14,7 +14,7 @@ import { addIcons } from 'ionicons';
   templateUrl: './add-restaurante-modal.component.html',
 })
 export class AddRestauranteModalComponent {
-
+  //Se añaden los iconos en el constructor
     constructor() {
       addIcons({ closeCircleOutline });
     }
@@ -26,6 +26,7 @@ export class AddRestauranteModalComponent {
 
   guardando = signal(false);
 
+  //Se añade validación para los valores de estrellas y soles sin que sean obligatorios
   form = this.fb.nonNullable.group({
     documentName: ['', Validators.required],
     territory:    ['', Validators.required],

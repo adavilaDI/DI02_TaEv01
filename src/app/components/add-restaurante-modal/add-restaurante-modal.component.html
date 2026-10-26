@@ -88,6 +88,7 @@
 
       <!-- Estrellas Michelin -->
       <ion-item>
+        <!--En estrellas y soles se especifican en el label los valores aceptados-->
         <ion-input
           label="Estrellas Michelin (0-3)"
           labelPlacement="stacked"
@@ -97,11 +98,12 @@
           formControlName="michelinStar">
         </ion-input>
       </ion-item>
-        @if (form.get('michelinStar')?.invalid || form.get('michelinStar')?.touched) {
-          <ion-text color="danger" class="ion-padding-start">
-            <small>Introduce un numero entre 0 y 3</small>
-          </ion-text>
-        }
+      <!--Se muestra el texto corrector si el campo es invalido o se marca como touched-->
+      @if (form.get('michelinStar')?.invalid || form.get('michelinStar')?.touched) {
+        <ion-text color="danger" class="ion-padding-start">
+          <small>Introduce un numero entre 0 y 3</small>
+        </ion-text>
+      }
 
       <!-- Soles Repsol -->
       <ion-item>

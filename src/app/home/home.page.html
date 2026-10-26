@@ -1,6 +1,7 @@
 <ion-header>
   <ion-toolbar>
     <ion-title>
+      <!--Se añaden iconos para el título y para los botones de la cabecera-->
       <img src="../assets/icon/restaurante.png" style="height: 30px; width: auto;"/>
       <span> Guía de Restaurantes Euskadi</span>
     </ion-title>
@@ -50,11 +51,14 @@
       </ion-label>
     </ion-item>
   }
+  <!--Añade boton limpiar filtros si existen -->
   @if(hayFiltrosActivos()){
     <ion-button fill="outline" (click)="limpiarTodosFiltros()" expand="block" color="warning" strong="true">Borrar todos los filtros</ion-button>
   }
 
   <!-- Filtros -->
+   <!--Se añaden iconos close-circle en todos los filtros para limpiarlos individualmente
+   y se mantienen desactivados si no hay datos y no hay filtro -->
   <ion-grid>
     <ion-row class="ion-align-items-center ion-justify-content-start">
       <!-- Filtro de búsqueda -->
@@ -133,7 +137,7 @@
     </ion-row>
   </ion-grid>
 
-  <!--Chips para reforzar los filtros-->
+  <!--Chips para reforzar los filtros, solo si están activos, y close-circle para poder eliminarlos individualmente-->
   @if(hayFiltrosActivos()){
     <div class="chips">
       @if(textoBusqueda()){
@@ -141,6 +145,7 @@
       }
       @if(territorioSeleccionado()){
         <ion-chip color="secondary"><ion-label>{{territorioSeleccionado()}}</ion-label>
+        <!--Bloquea el territorio si hay localidades filtradas-->
         @if(localidadesSeleccionadas().length > 0){
           <ion-icon name="lock-closed" disable = 'true' title="No se puede eliminar habiendo localidades"></ion-icon>
         } @else {
@@ -175,6 +180,7 @@
       <table class="restaurantes-table">
         <thead>
           <tr>
+            <!--Ordenacion de columnas: nombre,localidad,soles y estrellas -->
             <th class="ordenable" (click)= "ordenar('documentName')" title="Ordenar">
               Nombre
               @if(sortColumna() === 'documentName'){
@@ -233,6 +239,7 @@
                   </a>
                 }
               </td>
+              <!--Muestra la cantidad con iconos-->
               <td class="center">
                 @if(estrellasMichelin(r) > 0){
                   @for(e of crearArray(estrellasMichelin(r)); track e){
@@ -247,6 +254,7 @@
                   }
                 } @else{-}
               </td>
+              <!--Muestra el icono de la papelera-->
               <td class="center">
                 <ion-button fill="clear" color="danger" size="small"
                   title="Borrar restaurante"

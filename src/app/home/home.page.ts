@@ -19,7 +19,7 @@ import { closeCircleOutline, addOutline, cloudUploadOutline, restaurant, trash, 
 export class HomePage {
 
   constructor() {
-    // Registra los iconos que vas a utilizar
+    // Se añaden los iconos que se van a utilizar
     addIcons({ closeCircleOutline, addOutline, cloudUploadOutline, restaurant, trash, globeOutline,
       sunny, star, caretUpOutline, caretDownOutline, lockClosed });
   }
@@ -63,6 +63,7 @@ export class HomePage {
       this.restaurantesCargados.set(datos);
       await loading.dismiss();
       this.mostrarToast(`${datos.length} restaurantes cargados`, 'success');
+      //El catch especifica el error
     } catch (error : any) {
         await loading.dismiss();
         console.error('Error al cargar datos: ', error);
@@ -118,7 +119,7 @@ export class HomePage {
   // Muestra confirmación y borra el restaurante indicado de Firebase y de la lista local
   async borrarRestaurante(r: Restaurante) {
 
-    //Creo un toast especifico con opción deshacer
+    //Crea un toast especifico con opción deshacer
     const toastBorrar = await this.toastCtrl.create({
       message: `Restaurante ${r.documentName} borrado`,
       duration: 6000,
@@ -136,6 +137,7 @@ export class HomePage {
               return;
             }
             await this.restauranteService.add(r);
+            //El catch especifica el error
           } catch (error: any){
             console.error('Error al deshacer borrar', error);
             const msg = error?.code === 'permission-denied'
@@ -161,6 +163,7 @@ export class HomePage {
               this.mostrarToast('No se puede borrar: el restaurante no tiene ID.', 'danger');
               return;
             }
+            //Se añade un loading 
             const loading = await this.loadingCtrl.create({
               message: `Borrando ${r.documentName}`,
               backdropDismiss: false
@@ -170,8 +173,11 @@ export class HomePage {
               await this.restauranteService.delete(r.id);
               this.restaurantesCargados.update(lista => lista.filter(x => x.id !== r.id));
               loading.dismiss();
+              //Muestra el toast con opción deshacer
               await toastBorrar.present();
-            } catch (error :any){
+            } 
+            //El catch especifica el error
+            catch (error :any){
               loading.dismiss();
               console.error('Error al borrar restaurante:', error);
               const msg = error?.code === 'permission-denied'
@@ -203,7 +209,7 @@ export class HomePage {
 
     const toast = await this.toastCtrl.create({
       message: mensaje,
-      //Se establece la duracion segun el color, para danger hay que cerrarlo manual
+      //Se establece la duracion segun el color, para danger hay que cerrarlo manualmente
       duration: color === 'danger'? 0: 4000,
       color,
       position: 'bottom',
