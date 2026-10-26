@@ -48,6 +48,7 @@
       background-color: #3880ff;
       color: #ffffff;
       border: 1px solid rgba(255, 255, 255, 0.4);
+
       //Se añade una clase ordenable para resaltar las columnas activas cambiando de color
       &.ordenable{
         cursor: pointer;
@@ -109,7 +110,7 @@
     }
   }
 
-  //Se añade una clase para que los chips se mantengan en lo alto de la página con fondo blanco al hacer scroll
+  //Se añade una clase chips para que se mantengan en lo alto de la página con fondo blanco al hacer scroll
   .chips{
     position: sticky;
     top: 0; 

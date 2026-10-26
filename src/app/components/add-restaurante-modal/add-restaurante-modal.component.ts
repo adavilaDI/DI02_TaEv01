@@ -26,7 +26,7 @@ export class AddRestauranteModalComponent {
 
   guardando = signal(false);
 
-  //Se añade validación para los valores de estrellas y soles sin que sean obligatorios
+  //Se añade validación para los mínimos y máximos de estrellas y soles sin que sean obligatorios
   form = this.fb.nonNullable.group({
     documentName: ['', Validators.required],
     territory:    ['', Validators.required],

@@ -333,18 +333,20 @@ export class HomePage {
   }
 
   //Signals para ordenar las columnas
-  sortColumna = signal('');
-  sortDireccion = signal(false);
+  sortColumna = signal(''); //para recoger la columna activa
+  sortDireccion = signal(false); //para dirección ascendente o descendente
 
   //Metodo que ordena la columna activa que se le pasa como parametro
   ordenar(columna: string){
-    console.log('pulsado');
+
+    //Si la columna esta activa cambia el signal de direccion, si no, actualiza el signal de columna y resetea la dirección
     if(this.sortColumna() === columna){
       this.sortDireccion.set(!this.sortDireccion());
     } else{
       this.sortColumna.set(columna);
       this.sortDireccion.set(true);
     }
+    //Ordena los restaurantes filtrados en función de la columna activa
     this.restaurantesFiltrados().sort((a: any, b: any) => {
       let valorA = a[columna];
       let valorB = b[columna];
@@ -352,6 +354,7 @@ export class HomePage {
       if (typeof valorA === 'string') valorA = valorA.toLowerCase();
       if (typeof valorB === 'string') valorB = valorB.toLowerCase();
 
+      //Compara los valores para determinar la dirección y actualizar el signal 
       if (valorA < valorB) {
         return this.sortDireccion() ? -1 : 1;
       }
